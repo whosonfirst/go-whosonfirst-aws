@@ -7,7 +7,7 @@ prep:
 self:   prep rmdeps
 	if test -d src; then rm -rf src; fi
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-aws
-	cp *.go src/github.com/whosonfirst/go-whosonfirst-aws/
+	cp -r s3 src/github.com/whosonfirst/go-whosonfirst-aws/
 	cp -r vendor/* src/
 
 rmdeps:
@@ -26,8 +26,8 @@ vendor-deps: rmdeps deps
 	rm -rf src
 
 fmt:
-	go fmt *.go
 	go fmt cmd/*.go
+	go fmt s3/*.go
 
 bin: 	self
 	@GOPATH=$(GOPATH) go build -o bin/s3 cmd/s3.go

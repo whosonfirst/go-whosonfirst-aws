@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/whosonfirst/go-whosonfirst-aws"
+	"github.com/whosonfirst/go-whosonfirst-aws/s3"
 	_ "io"
 	"log"
 	"os"
