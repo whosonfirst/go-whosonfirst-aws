@@ -1,6 +1,6 @@
-# go-aws-s3
+# go-whosonfirst-aws
 
-There are many (AWS) S3 wrappers. This one is ours.
+There are many AWS wrappers. This one is ours.
 
 ## Install
 

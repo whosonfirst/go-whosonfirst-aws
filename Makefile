@@ -6,8 +6,8 @@ prep:
 
 self:   prep rmdeps
 	if test -d src; then rm -rf src; fi
-	mkdir -p src/github.com/aaronland/go-aws-s3
-	cp *.go src/github.com/aaronland/go-aws-s3/
+	mkdir -p src/github.com/whosonfirst/go-whosonfirst-aws
+	cp *.go src/github.com/whosonfirst/go-whosonfirst-aws/
 	cp -r vendor/* src/
 
 rmdeps:
