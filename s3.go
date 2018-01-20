@@ -2,9 +2,12 @@ package s3
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -259,6 +262,41 @@ func (conn *S3Connection) Delete(key string) error {
 	}
 
 	return nil
+}
+
+func (conn *S3Connection) HasChanged(key string, local []byte) (bool, error) {
+
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#HeadObjectInput
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#HeadObjectOutput
+
+	head, err := conn.Head(key)
+
+	if err != nil {
+
+		aws_err := err.(awserr.Error)
+
+		if aws_err.Code() == "NotFound" {
+			return true, nil
+		}
+
+		if aws_err.Code() == "SlowDown" {
+
+		}
+
+		return false, err
+	}
+
+	enc := md5.Sum(local)
+	local_hash := hex.EncodeToString(enc[:])
+
+	etag := *head.ETag
+	remote_hash := strings.Replace(etag, "\"", "", -1)
+
+	if local_hash == remote_hash {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (conn *S3Connection) prepareKey(key string) string {
