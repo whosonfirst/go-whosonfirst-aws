@@ -1,5 +1,8 @@
 package s3
 
+// ideally we could make this conform to some standard "storage" interface
+// but that works hasn't been done (20180120/thisisaaronland)
+
 import (
 	"bytes"
 	"crypto/md5"
@@ -202,6 +205,11 @@ func (conn *S3Connection) GetBytes(key string) ([]byte, error) {
 
 func (conn *S3Connection) Put(key string, fh io.ReadCloser) error {
 
+	// file under known knowns: AWS expects a ReadSeeker for performance
+	// and memory reasons but we're passing around ReadClosers  - see also:
+	// https://github.com/whosonfirst/go-whosonfirst-readwrite/issues/2
+	// (20180120/thisisaaronland)
+
 	defer fh.Close()
 
 	key = conn.prepareKey(key)
@@ -216,23 +224,6 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser) error {
 
 	_, err := uploader.Upload(params)
 	return err
-
-	/*
-		params := &s3.PutObjectInput{
-			Bucket: aws.String(conn.bucket),
-			Key:    aws.String(key),
-			Body:   fh,
-			ACL:    aws.String("public-read"),
-		}
-
-		_, err := conn.service.PutObject(params)
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	*/
 }
 
 func (conn *S3Connection) PutBytes(key string, body []byte) error {
