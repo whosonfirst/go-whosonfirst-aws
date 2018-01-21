@@ -52,8 +52,8 @@ func ValidS3Credentials() []string {
 	valid := []string{
 		"env:",
 		"iam:",
-		"shared:{PATH}:{PROFILE}",
 		"{PROFILE}",
+		"{PATH}:{PROFILE}",
 	}
 
 	return valid
@@ -82,36 +82,41 @@ func NewS3Connection(s3cfg S3Config) (*S3Connection, error) {
 		creds := credentials.NewEnvCredentials()
 		cfg.WithCredentials(creds)
 
-	} else if strings.HasPrefix(s3cfg.Credentials, "shared:") {
-
-		details := strings.Split(s3cfg.Credentials, ":")
-
-		if len(details) != 3 {
-			return nil, errors.New("Shared credentials need to be defined as 'shared:CREDENTIALS_FILE:PROFILE_NAME'")
-		}
-
-		creds := credentials.NewSharedCredentials(details[1], details[2])
-		cfg.WithCredentials(creds)
-
 	} else if strings.HasPrefix(s3cfg.Credentials, "iam:") {
 
 		// assume an IAM role suffient for doing whatever
 
 	} else if s3cfg.Credentials != "" {
 
-		// for backwards compatibility as of 05a6042dc5956c13513bdc5ab4969877013f795c
-		// (20161203/thisisaaronland)
+		details := strings.Split(s3cfg.Credentials, ":")
 
-		whoami, err := user.Current()
+		var creds_file string
+		var profile string
 
-		if err != nil {
-			return nil, err
+		if len(details) == 1 {
+
+			whoami, err := user.Current()
+
+			if err != nil {
+				return nil, err
+			}
+
+			dotaws := filepath.Join(whoami.HomeDir, ".aws")
+			creds_file = filepath.Join(dotaws, "credentials")
+
+			profile = details[0]
+
+		} else {
+
+			path, err := filepath.Abs(details[0])
+
+			if err != nil {
+				return nil, err
+			}
+
+			creds_file = path
+			profile = details[1]
 		}
-
-		dotaws := filepath.Join(whoami.HomeDir, ".aws")
-		creds_file := filepath.Join(dotaws, "credentials")
-
-		profile := s3cfg.Credentials
 
 		creds := credentials.NewSharedCredentials(creds_file, profile)
 		cfg.WithCredentials(creds)

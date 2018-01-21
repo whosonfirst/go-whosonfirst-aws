@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"github.com/whosonfirst/go-whosonfirst-aws/s3"
-	_ "io"
+	"io"
+	_ "io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -89,7 +90,23 @@ func main() {
 			log.Fatal(err)
 		}
 
-		log.Println(rsp)
+		switch cmd {
+
+		case "HEAD":
+			log.Println(rsp)
+		case "GET":
+
+			fh := rsp.(io.ReadCloser)
+
+			_, err := io.Copy(os.Stdout, fh)
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		default:
+			// pass
+		}
 	}
 
 	os.Exit(0)
