@@ -260,7 +260,7 @@ func (conn *S3Connection) GetBytes(key string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (conn *S3Connection) Put(key string, fh io.ReadCloser) error {
+func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{}) error {
 
 	// file under known knowns: AWS expects a ReadSeeker for performance
 	// and memory reasons but we're passing around ReadClosers  - see also:
@@ -275,6 +275,8 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser) error {
 	key = conn.prepareKey(key)
 
 	uploader := s3manager.NewUploader(conn.session)
+
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/s3manager/#UploadInput
 
 	params := s3manager.UploadInput{
 		Bucket: aws.String(conn.bucket),
