@@ -65,7 +65,48 @@ func ValidS3CredentialsString() string {
 	return fmt.Sprintf("Valid credential flags are: %s", strings.Join(valid, ", "))
 }
 
-func NewS3Connection(s3cfg S3Config) (*S3Connection, error) {
+func NewS3ConfigFromString(str_config string) (*S3Config, error) {
+
+	parts := strings.Split(str_config, " ")
+
+	if len(parts) != 4 {
+		return nil, errors.New("Invalid count for config")
+	}
+
+	config := S3Config{
+		Bucket:      "",
+		Prefix:      "",
+		Region:      "",
+		Credentials: "",
+	}
+
+	for _, p := range parts {
+
+		p = strings.Trim(p, " ")
+		kv := strings.Split(p, "=")
+
+		if len(kv) != 2 {
+			return nil, errors.New("Invalid count for config block")
+		}
+
+		switch kv[0] {
+		case "bucket":
+			config.Bucket = kv[1]
+		case "prefix":
+			config.Prefix = kv[1]
+		case "region":
+			config.Region = kv[1]
+		case "credentials":
+			config.Credentials = kv[1]
+		default:
+			return nil, errors.New("Invalid key for config block")
+		}
+	}
+
+	return &config, nil
+}
+
+func NewS3Connection(s3cfg *S3Config) (*S3Connection, error) {
 
 	if s3cfg.Bucket == "" {
 		return nil, errors.New("Invalid S3 bucket name")

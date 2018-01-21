@@ -30,7 +30,7 @@ func main() {
 		Credentials: *credentials,
 	}
 
-	conn, err := s3.NewS3Connection(config)
+	conn, err := s3.NewS3Connection(&config)
 
 	if err != nil {
 		log.Fatal(err)
