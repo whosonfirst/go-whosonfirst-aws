@@ -308,6 +308,7 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{})
 			case "ContentType":
 				// something something something...
 				// https://golang.org/pkg/net/http/#DetectContentType
+				// https://golang.org/pkg/mime/#TypeByExtension
 				params.ContentType = aws.String(v)
 			default:
 				// pass
