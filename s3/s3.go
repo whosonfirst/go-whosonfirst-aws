@@ -304,6 +304,8 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser) error {
 			case "ACL":
 				params.ACL = aws.String(v)
 			case "ContentType":
+				// something something something...
+				// https://golang.org/pkg/net/http/#DetectContentType
 				params.ContentType = aws.String(v)
 			default:
 				// pass
