@@ -153,6 +153,17 @@ func NewS3Connection(s3cfg S3Config) (*S3Connection, error) {
 	return &c, nil
 }
 
+func (conn *S3Connection) URI(key string) string {
+
+	key = conn.prepareKey(key)
+
+	if conn.prefix != "" {
+		key = fmt.Sprintf("%s/%s", conn.prefix, key)
+	}
+
+	return fmt.Sprintf("https://s3.amazonaws.com/%s/%s", conn.bucket, key)
+}
+
 // https://tools.ietf.org/html/rfc7231#section-4.3.2
 // https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectHEAD.html
 
@@ -217,17 +228,49 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser) error {
 
 	defer fh.Close()
 
+	parsed := strings.Split(key, "#")
+
+	key = parsed[0]
 	key = conn.prepareKey(key)
 
 	uploader := s3manager.NewUploader(conn.session)
 
-	params := &s3manager.UploadInput{
+	params := s3manager.UploadInput{
 		Bucket: aws.String(conn.bucket),
 		Key:    aws.String(key),
 		Body:   fh,
 	}
 
-	_, err := uploader.Upload(params)
+	// I don't love this... still working it out
+	// (20180120/thisisaaronland)
+
+	if len(parsed) > 1 {
+
+		extras := strings.Split(parsed[1], ",")
+
+		for _, ex := range extras {
+
+			kv := strings.Split(ex, "=")
+
+			if len(kv) != 2 {
+				return errors.New("Invalid extras")
+			}
+
+			k := kv[0]
+			v := kv[1]
+
+			switch k {
+			case "ACL":
+				params.ACL = aws.String(v)
+			case "ContentType":
+				params.ContentType = aws.String(v)
+			default:
+				// pass
+			}
+		}
+	}
+
+	_, err := uploader.Upload(&params)
 	return err
 }
 

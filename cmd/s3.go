@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/whosonfirst/go-whosonfirst-aws/s3"
 	"io"
 	_ "io/ioutil"
@@ -56,20 +57,29 @@ func main() {
 		switch cmd {
 
 		case "HEAD":
+
 			rsp, err = conn.Head(path)
 
 		case "GET":
+
 			rsp, err = conn.Get(path)
 
 		case "PUT":
 
-			abs_path, err := filepath.Abs(path)
+			parsed := strings.Split(path, "#")
+
+			rel_path := parsed[0]
+			abs_path, err := filepath.Abs(rel_path)
 
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			key := filepath.Base(abs_path)
+
+			if len(parsed) == 2 {
+				key = fmt.Sprintf("%s#%s", key, parsed[1])
+			}
 
 			fh, err := os.Open(abs_path)
 
@@ -82,7 +92,13 @@ func main() {
 		case "DELETE":
 
 			err = conn.Delete(path)
+
+		case "URI":
+
+			rsp = conn.URI(path)
+
 		default:
+
 			log.Fatal("Invalid command")
 		}
 
@@ -94,6 +110,12 @@ func main() {
 
 		case "HEAD":
 			log.Println(rsp)
+
+		case "URI":
+
+			uri := rsp.(string)
+			os.Stdout.Write([]byte(uri))
+
 		case "GET":
 
 			fh := rsp.(io.ReadCloser)
