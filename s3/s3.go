@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/whosonfirst/go-whosonfirst-mimetypes"
 	"io"
 	_ "log"
 	"os/user"
@@ -284,6 +285,13 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{})
 		Body:   fh,
 	}
 
+	ext := filepath.Ext(key)
+	types := mimetypes.TypesByExtension(ext)
+
+	if len(types) == 1 {
+		params.ContentType = aws.String(types[0])
+	}
+
 	// I don't love this... still working it out
 	// (20180120/thisisaaronland)
 
@@ -306,9 +314,6 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{})
 			case "ACL":
 				params.ACL = aws.String(v)
 			case "ContentType":
-				// something something something...
-				// https://golang.org/pkg/net/http/#DetectContentType
-				// https://golang.org/pkg/mime/#TypeByExtension
 				params.ContentType = aws.String(v)
 			default:
 				// pass
