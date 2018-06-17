@@ -108,11 +108,9 @@ func NewS3ConfigFromString(str_config string) (*S3Config, error) {
 		return nil, errors.New("Missing bucket config")
 	}
 
-	/*
-		if config.Region == "" {
-			return nil, errors.New("Missing region config")
-		}
-	*/
+	if config.Region == "" {
+		return nil, errors.New("Missing region config")
+	}
 
 	if config.Credentials == "" {
 		return nil, errors.New("Missing credentials config")
@@ -131,10 +129,7 @@ func NewS3Connection(s3cfg *S3Config) (*S3Connection, error) {
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/
 
 	cfg := aws.NewConfig()
-
-	if s3cfg.Region != "" {
-		cfg.WithRegion(s3cfg.Region)
-	}
+	cfg.WithRegion(s3cfg.Region)
 
 	if strings.HasPrefix(s3cfg.Credentials, "env:") {
 
