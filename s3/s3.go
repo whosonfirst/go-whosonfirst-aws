@@ -322,10 +322,10 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{})
 			k := kv[0]
 			v := kv[1]
 
-			switch k {
-			case "ACL":
+			switch strings.ToLower(k) {
+			case "acl":
 				params.ACL = aws.String(v)
-			case "ContentType":
+			case "contenttype":
 				params.ContentType = aws.String(v)
 			default:
 				// pass
