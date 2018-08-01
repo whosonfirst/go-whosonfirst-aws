@@ -66,7 +66,12 @@ func main() {
 
 		case "LIST":
 
-			err = conn.List()
+			cb := func(obj *s3.S3Object) error {
+				log.Println(obj.Key)
+				return nil
+			}
+			
+			err = conn.List(cb)
 
 		case "PUT":
 

@@ -18,10 +18,11 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-mimetypes"
 	"io"
 	"io/ioutil"
-	"log"
+	_ "log"
 	"os/user"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 func ReadCloserFromBytes(b []byte) (io.ReadCloser, error) {
@@ -42,6 +43,19 @@ type S3Config struct {
 	Region      string
 	Credentials string // see notes below
 }
+
+// this is a nearly straight clone of the core S3 object and
+// exists so that people don't have to (re) load all of the
+// aws-sdk-go code in their packages (20180801/thisisaaronland)
+
+type S3Object struct {
+	Key          string
+	Size         int64
+	LastModified time.Time
+	ETag         string
+}
+
+type S3ListCallback func(*S3Object) error
 
 func ValidS3Credentials() []string {
 
@@ -361,7 +375,7 @@ func (conn *S3Connection) Delete(key string) error {
 	return nil
 }
 
-func (conn *S3Connection) List() error {
+func (conn *S3Connection) List(cb S3ListCallback) error {
 
 	params := &s3.ListObjectsInput{
 		Bucket: aws.String(conn.bucket),
@@ -372,15 +386,30 @@ func (conn *S3Connection) List() error {
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#ListObjectsOutput
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#Object
 
-	cb := func(rsp *s3.ListObjectsOutput, last_page bool) bool {
+	aws_cb := func(rsp *s3.ListObjectsOutput, last_page bool) bool {
 
-		log.Println(rsp.Contents)
+		for _, aws_obj := range rsp.Contents {
+
+			obj := S3Object{
+				Key:          *aws_obj.Key,
+				Size:         *aws_obj.Size,
+				ETag:         *aws_obj.ETag,
+				LastModified: *aws_obj.LastModified,
+			}
+
+			err := cb(&obj)
+
+			if err != nil {
+				return false
+			}
+		}
+
 		return true
 	}
 
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#example_S3_ListObjects_shared00
 
-	err := conn.service.ListObjectsPages(params, cb)
+	err := conn.service.ListObjectsPages(params, aws_cb)
 
 	if err != nil {
 		return err
