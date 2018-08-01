@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/whosonfirst/go-whosonfirst-mimetypes"
 	"io"
-	_ "log"
+	"log"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -358,6 +358,34 @@ func (conn *S3Connection) Delete(key string) error {
 	}
 
 	_, err := conn.service.DeleteObject(params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (conn *S3Connection) List() error {
+
+	params := &s3.ListObjectsInput{
+		Bucket: aws.String(conn.bucket),
+		Prefix: aws.String(conn.prefix),
+		// Delimiter: "baz",
+	}
+
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#ListObjectsOutput
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#Object
+
+	cb := func(rsp *s3.ListObjectsOutput, last_page bool) bool {
+
+		log.Println(rsp.Contents)
+		return true
+	}
+
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#example_S3_ListObjects_shared00
+
+	err := conn.service.ListObjectsPages(params, cb)
 
 	if err != nil {
 		return err
