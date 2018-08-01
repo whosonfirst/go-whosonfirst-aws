@@ -64,6 +64,10 @@ func main() {
 
 			rsp, err = conn.Get(path)
 
+		case "LIST":
+
+			err = conn.List()
+
 		case "PUT":
 
 			parsed := strings.Split(path, "#")
