@@ -17,21 +17,16 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/whosonfirst/go-whosonfirst-mimetypes"
 	"io"
+	"io/ioutil"
 	"log"
 	"os/user"
 	"path/filepath"
 	"strings"
 )
 
-type nopCloser struct {
-	io.Reader
-}
-
-func (nopCloser) Close() error { return nil }
-
 func ReadCloserFromBytes(b []byte) (io.ReadCloser, error) {
 	body := bytes.NewReader(b)
-	return nopCloser{body}, nil
+	return ioutil.NopCloser(body), nil
 }
 
 type S3Connection struct {
