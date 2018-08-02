@@ -5,6 +5,7 @@ package s3
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
@@ -415,23 +416,63 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 
 	aws_cb := func(rsp *s3.ListObjectsOutput, last_page bool) bool {
 
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+
+		done_ch := make(chan bool)
+		err_ch := make(chan error)
+
 		for _, aws_obj := range rsp.Contents {
 
-			obj := S3Object{
+			obj := &S3Object{
 				Key:          *aws_obj.Key,
 				Size:         *aws_obj.Size,
 				ETag:         *aws_obj.ETag,
 				LastModified: *aws_obj.LastModified,
 			}
 
-			err := cb(&obj)
+			go func(ctx context.Context, obj *S3Object, done_ch chan bool, err_ch chan error) {
 
-			if err != nil {
-				return false
+				defer func() {
+					done_ch <- true
+
+				}()
+
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					// pass
+				}
+
+				err := cb(obj)
+
+				if err != nil {
+					err_ch <- err
+				}
+
+			}(ctx, obj, done_ch, err_ch)
+		}
+
+		remaining := len(rsp.Contents)
+		ok := true
+
+		for remaining > 0 {
+
+			select {
+
+			case <-done_ch:
+				remaining -= 1
+			case e := <-err_ch:
+				log.Println(e)
+				ok = false
+				break
+			default:
+				// pass
 			}
 		}
 
-		return true
+		return ok
 	}
 
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/#example_S3_ListObjects_shared00
