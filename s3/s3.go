@@ -398,8 +398,6 @@ func (conn *S3Connection) SetACLForKey(key string, acl string) error {
 	}
 
 	_, err := conn.service.PutObjectAcl(params)
-
-	log.Printf("SET %s ON %s (%v)\n", acl, key, err)
 	return err
 }
 
@@ -435,7 +433,6 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 
 				defer func() {
 					done_ch <- true
-
 				}()
 
 				select {
