@@ -45,6 +45,12 @@ type S3Config struct {
 	Credentials string // see notes below
 }
 
+type S3ListOptions struct {
+	Strict bool
+	Timings bool
+	// Logger log.Logger
+}
+
 // this is a nearly straight clone of the core S3 object and
 // exists so that people don't have to (re) load all of the
 // aws-sdk-go code in their packages (20180801/thisisaaronland)
@@ -445,7 +451,8 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 				err := cb(obj)
 
 				if err != nil {
-					err_ch <- err
+					msg := fmt.Sprintf("failed to process %s because %s", obj.Key, err)
+					err_ch <- errors.New(msg)
 				}
 
 			}(ctx, obj, done_ch, err_ch)
@@ -462,8 +469,14 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 				remaining -= 1
 			case e := <-err_ch:
 				log.Println(e)
-				ok = false
-				break
+
+				/*
+				if opts.Strict {
+					ok = false
+					break
+				}
+				*/
+				
 			default:
 				// pass
 			}
