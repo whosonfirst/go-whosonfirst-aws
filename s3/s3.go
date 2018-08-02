@@ -18,7 +18,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-mimetypes"
 	"io"
 	"io/ioutil"
-	_ "log"
+	"log"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -373,6 +373,33 @@ func (conn *S3Connection) Delete(key string) error {
 	}
 
 	return nil
+}
+
+func (conn *S3Connection) SetACLForBucket(acl string) error {
+
+	cb := func(obj *S3Object) error {
+
+		err := conn.SetACLForKey(obj.Key, acl)
+		return err
+	}
+
+	return conn.List(cb)
+}
+
+func (conn *S3Connection) SetACLForKey(key string, acl string) error {
+
+	key = conn.prepareKey(key)
+
+	params := &s3.PutObjectAclInput{
+		ACL:    aws.String(acl),
+		Bucket: aws.String(conn.bucket),
+		Key:    aws.String(key),
+	}
+
+	_, err := conn.service.PutObjectAcl(params)
+
+	log.Printf("SET %s ON %s (%v)\n", acl, key, err)
+	return err
 }
 
 func (conn *S3Connection) List(cb S3ListCallback) error {

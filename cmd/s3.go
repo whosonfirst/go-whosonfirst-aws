@@ -56,6 +56,29 @@ func main() {
 
 		switch cmd {
 
+		case "ACL":
+
+			parsed := strings.Split(path, "#")
+
+			if len(parsed) != 2 {
+				log.Fatal("Invalid acl string")
+			}
+
+			key := parsed[0]
+			acl := parsed[1]
+
+			if acl == "" {
+				log.Fatal("Missing ACL")
+			}
+
+			if key == "" {
+				err = conn.SetACLForBucket(acl)
+			} else {
+				err = conn.SetACLForKey(key, acl)
+			}
+
+			log.Println(parsed, len(parsed))
+
 		case "HEAD":
 
 			rsp, err = conn.Head(path)
@@ -70,7 +93,7 @@ func main() {
 				log.Println(obj.Key)
 				return nil
 			}
-			
+
 			err = conn.List(cb)
 
 		case "PUT":
