@@ -46,7 +46,7 @@ type S3Config struct {
 }
 
 type S3ListOptions struct {
-	Strict bool
+	Strict  bool
 	Timings bool
 	// Logger log.Logger
 }
@@ -56,7 +56,8 @@ type S3ListOptions struct {
 // aws-sdk-go code in their packages (20180801/thisisaaronland)
 
 type S3Object struct {
-	Key          string
+	KeyRaw       string // what aws-sdk-go returns
+	Key          string // KeyRaw but with S3Connection.prefix removed
 	Size         int64
 	LastModified time.Time
 	ETag         string
@@ -428,8 +429,24 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 
 		for _, aws_obj := range rsp.Contents {
 
+			// because this:
+			// https://github.com/whosonfirst/go-whosonfirst-aws/issues/1
+
+			key_raw := *aws_obj.Key
+			key := key_raw
+
+			if conn.prefix != "" {
+
+				prefix := fmt.Sprintf("%s/", conn.prefix)
+
+				if strings.HasPrefix(key, prefix) {
+					key = strings.Replace(key, prefix, "", -1)
+				}
+			}
+
 			obj := &S3Object{
-				Key:          *aws_obj.Key,
+				KeyRaw:       key_raw,
+				Key:          key,
 				Size:         *aws_obj.Size,
 				ETag:         *aws_obj.ETag,
 				LastModified: *aws_obj.LastModified,
@@ -471,12 +488,12 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 				log.Println(e)
 
 				/*
-				if opts.Strict {
-					ok = false
-					break
-				}
+					if opts.Strict {
+						ok = false
+						break
+					}
 				*/
-				
+
 			default:
 				// pass
 			}

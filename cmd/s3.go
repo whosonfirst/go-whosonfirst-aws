@@ -90,7 +90,8 @@ func main() {
 		case "LIST":
 
 			cb := func(obj *s3.S3Object) error {
-				log.Println(obj.Key)
+
+				log.Printf("%s (%s)\n", obj.Key, obj.KeyRaw)
 				return nil
 			}
 
