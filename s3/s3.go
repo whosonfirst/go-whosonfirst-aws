@@ -413,6 +413,7 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 	params := &s3.ListObjectsInput{
 		Bucket: aws.String(conn.bucket),
 		Prefix: aws.String(conn.prefix),
+		MaxKeys: aws.Int64(500),		// please make me an option but default is 1000 which can trigger max filehandle/connections errors
 		// Delimiter: "baz",
 	}
 
