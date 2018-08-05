@@ -23,6 +23,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -48,6 +49,7 @@ type S3Config struct {
 type S3ListOptions struct {
 	Strict  bool
 	Timings bool
+	MaxKeys int64
 	// Logger log.Logger
 }
 
@@ -64,6 +66,17 @@ type S3Object struct {
 }
 
 type S3ListCallback func(*S3Object) error
+
+func DefaultS3ListOptions() *S3ListOptions {
+
+	opts := S3ListOptions{
+		Strict:  false,
+		Timings: false,
+		MaxKeys: 500,
+	}
+
+	return &opts
+}
 
 func ValidS3Credentials() []string {
 
@@ -383,7 +396,7 @@ func (conn *S3Connection) Delete(key string) error {
 	return nil
 }
 
-func (conn *S3Connection) SetACLForBucket(acl string) error {
+func (conn *S3Connection) SetACLForBucket(acl string, opts *S3ListOptions) error {
 
 	cb := func(obj *S3Object) error {
 
@@ -391,7 +404,7 @@ func (conn *S3Connection) SetACLForBucket(acl string) error {
 		return err
 	}
 
-	return conn.List(cb)
+	return conn.List(cb, opts)
 }
 
 func (conn *S3Connection) SetACLForKey(key string, acl string) error {
@@ -408,12 +421,48 @@ func (conn *S3Connection) SetACLForKey(key string, acl string) error {
 	return err
 }
 
-func (conn *S3Connection) List(cb S3ListCallback) error {
+func (conn *S3Connection) List(cb S3ListCallback, opts *S3ListOptions) error {
+
+	count_pages := int64(0)
+	count_items := int64(0)
+
+	if opts.Timings {
+
+		done_ch := make(chan bool)
+
+		defer func() {
+			done_ch <- true
+		}()
+
+		ticker := time.NewTicker(time.Second * 10)
+
+		go func() {
+
+			for range ticker.C {
+
+				select {
+				case <-done_ch:
+					break
+				default:
+					// pass
+				}
+
+				log.Printf("items %d pages %d\n", atomic.LoadInt64(&count_items), atomic.LoadInt64(&count_pages))
+			}
+
+		}()
+
+		t1 := time.Now()
+
+		defer func() {
+			log.Printf("time to list items %d %v\n", atomic.LoadInt64(&count_items), time.Since(t1))
+		}()
+	}
 
 	params := &s3.ListObjectsInput{
-		Bucket: aws.String(conn.bucket),
-		Prefix: aws.String(conn.prefix),
-		MaxKeys: aws.Int64(500),		// please make me an option but default is 1000 which can trigger max filehandle/connections errors
+		Bucket:  aws.String(conn.bucket),
+		Prefix:  aws.String(conn.prefix),
+		MaxKeys: aws.Int64(opts.MaxKeys),
 		// Delimiter: "baz",
 	}
 
@@ -422,6 +471,8 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 
 	aws_cb := func(rsp *s3.ListObjectsOutput, last_page bool) bool {
 
+		atomic.AddInt64(&count_pages, 1)
+
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -429,6 +480,8 @@ func (conn *S3Connection) List(cb S3ListCallback) error {
 		err_ch := make(chan error)
 
 		for _, aws_obj := range rsp.Contents {
+
+			atomic.AddInt64(&count_items, 1)
 
 			// because this:
 			// https://github.com/whosonfirst/go-whosonfirst-aws/issues/1

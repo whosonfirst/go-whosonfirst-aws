@@ -16,21 +16,39 @@ func main() {
 
 	valid_flags := s3.ValidS3CredentialsString()
 
+	var dsn = flag.String("dsn", "", "A valid S3 DSN")
+
 	var bucket = flag.String("bucket", "", "A valid S3 bucket name")
 	var prefix = flag.String("prefix", "", "An optional path/prefix inside the S3 bucket")
 	var region = flag.String("region", "us-east-1", "A valid AWS S3 region")
 	var credentials = flag.String("credentials", "env:", "A valid S3 credentials flag. "+valid_flags)
 
+	var timings = flag.Bool("timings", false, "...")
+
 	flag.Parse()
 
-	config := s3.S3Config{
-		Bucket:      *bucket,
-		Prefix:      *prefix,
-		Region:      *region,
-		Credentials: *credentials,
+	var config *s3.S3Config
+
+	if *dsn != "" {
+
+		c, err := s3.NewS3ConfigFromString(*dsn)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		config = c
+	} else {
+
+		config = &s3.S3Config{
+			Bucket:      *bucket,
+			Prefix:      *prefix,
+			Region:      *region,
+			Credentials: *credentials,
+		}
 	}
 
-	conn, err := s3.NewS3Connection(&config)
+	conn, err := s3.NewS3Connection(config)
 
 	if err != nil {
 		log.Fatal(err)
@@ -72,7 +90,11 @@ func main() {
 			}
 
 			if key == "" {
-				err = conn.SetACLForBucket(acl)
+
+				opts := s3.DefaultS3ListOptions()
+				opts.Timings = *timings
+
+				err = conn.SetACLForBucket(acl, opts)
 			} else {
 				err = conn.SetACLForKey(key, acl)
 			}
@@ -89,13 +111,16 @@ func main() {
 
 		case "LIST":
 
+			opts := s3.DefaultS3ListOptions()
+			opts.Timings = *timings
+
 			cb := func(obj *s3.S3Object) error {
 
 				log.Printf("%s (%s)\n", obj.Key, obj.KeyRaw)
 				return nil
 			}
 
-			err = conn.List(cb)
+			err = conn.List(cb, opts)
 
 		case "PUT":
 
