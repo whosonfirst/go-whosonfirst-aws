@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/whosonfirst/go-whosonfirst-aws/util"
 	"github.com/whosonfirst/go-whosonfirst-mimetypes"
 	"io"
 	"io/ioutil"
@@ -600,6 +601,10 @@ func (conn *S3Connection) HasChanged(key string, local []byte) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func IsNotFound(err error) bool {
+	return util.IsAWSErrorWithCode(err, s3.ErrCodeNoSuchKey)
 }
 
 func (conn *S3Connection) prepareKey(key string) string {
