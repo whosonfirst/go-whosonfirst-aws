@@ -9,7 +9,7 @@ func IsAWSError(err error) bool {
 	return is_aws
 }
 
-func IsAWSErrorWithCode(err error, code int) bool {
+func IsAWSErrorWithCode(err error, aws_code string) bool {
 	aws_err, is_aws := err.(awserr.Error)
-	return is_aws && aws_err.StatusCode() == code
+	return is_aws && aws_err.Code() == aws_code
 }
