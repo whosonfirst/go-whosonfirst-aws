@@ -11,5 +11,5 @@ func IsAWSError(err error) bool {
 
 func IsAWSErrorWithCode(err error, code int) bool {
 	aws_err, is_aws := err.(awserr.Error)
-	return is_aws && aws_err.Status() == code
+	return is_aws && aws_err.StatusCode() == code
 }
