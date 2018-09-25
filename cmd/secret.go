@@ -27,6 +27,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// please for to wrap me in a simplified interface/function...
+	// (20180925/thisisaaronland)
+
 	svc := secretsmanager.New(sess)
 
 	for _, secret_name := range flag.Args() {
