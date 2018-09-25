@@ -34,3 +34,4 @@ fmt:
 
 bin: 	self
 	@GOPATH=$(GOPATH) go build -o bin/s3 cmd/s3.go
+	@GOPATH=$(GOPATH) go build -o bin/secret cmd/secret.go
