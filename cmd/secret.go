@@ -7,14 +7,17 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/whosonfirst/go-whosonfirst-aws/config"
 	"github.com/whosonfirst/go-whosonfirst-aws/session"
 	"log"
 )
 
 func main() {
 
+	valid_creds := config.ValidCredentialsString()
+
 	var region = flag.String("region", "us-east-1", "A valid AWS region")
-	var credentials = flag.String("credentials", "env:", "A valid AWS credentials flag.")
+	var credentials = flag.String("credentials", "env:", "A valid AWS credentials flag. "+valid_creds)
 
 	flag.Parse()
 
@@ -23,7 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	svc := secretsmanager.New(sess)
 
 	for _, secret_name := range flag.Args() {
