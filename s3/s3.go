@@ -33,10 +33,11 @@ func ReadCloserFromBytes(b []byte) (io.ReadCloser, error) {
 }
 
 type S3Connection struct {
-	session *aws_session.Session
-	service *s3.S3
-	bucket  string
-	prefix  string
+	session  *aws_session.Session
+	service  *s3.S3
+	uploader *s3manager.Uploader
+	bucket   string
+	prefix   string
 }
 
 type S3Config struct {
@@ -166,11 +167,14 @@ func NewS3Connection(s3cfg *S3Config) (*S3Connection, error) {
 
 	service := s3.New(sess)
 
+	uploader := s3manager.NewUploader(sess)
+
 	c := S3Connection{
-		session: sess,
-		service: service,
-		bucket:  s3cfg.Bucket,
-		prefix:  s3cfg.Prefix,
+		session:  sess,
+		service:  service,
+		uploader: uploader,
+		bucket:   s3cfg.Bucket,
+		prefix:   s3cfg.Prefix,
 	}
 
 	return &c, nil
@@ -256,8 +260,6 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{})
 	key = parsed[0]
 	key = conn.prepareKey(key)
 
-	uploader := s3manager.NewUploader(conn.session)
-
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/s3/s3manager/#UploadInput
 
 	params := s3manager.UploadInput{
@@ -302,7 +304,7 @@ func (conn *S3Connection) Put(key string, fh io.ReadCloser, args ...interface{})
 		}
 	}
 
-	_, err := uploader.Upload(&params)
+	_, err := conn.uploader.Upload(&params)
 	return err
 }
 
