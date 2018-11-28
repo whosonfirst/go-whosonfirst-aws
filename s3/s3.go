@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/aaronland/go-string/dsn"	
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	aws_session "github.com/aws/aws-sdk-go/aws/session"
@@ -97,56 +98,30 @@ func ValidS3CredentialsString() string {
 	return fmt.Sprintf("Valid credential flags are: %s", strings.Join(valid, ", "))
 }
 
-func NewS3ConfigFromString(str_config string) (*S3Config, error) {
+func NewS3ConfigFromString(str_dsn string) (*S3Config, error) {
 
+	dsn_map, err := dsn.StringToDSNWithKeys(str_dsn, "bucket", "region", "credentials")
+
+	if err != nil {
+		return nil, err
+	}
+
+	bucket, _ := dsn_map["bucket"]
+	region, _ := dsn_map["region"]
+	credentials, _ := dsn_map["credentials"]	
+	
 	config := S3Config{
-		Bucket:      "",
-		Prefix:      "",
-		Region:      "",
-		Credentials: "",
+		Bucket:      bucket,
+		Region:      region,
+		Credentials: credentials,
 	}
 
-	str_config = strings.Trim(str_config, " ")
+	prefix, ok := dsn_map["prefix"]
 
-	if str_config != "" {
-		parts := strings.Split(str_config, " ")
-
-		for _, p := range parts {
-
-			p = strings.Trim(p, " ")
-			kv := strings.Split(p, "=")
-
-			if len(kv) != 2 {
-				return nil, errors.New("Invalid count for config block")
-			}
-
-			switch kv[0] {
-			case "bucket":
-				config.Bucket = kv[1]
-			case "prefix":
-				config.Prefix = kv[1]
-			case "region":
-				config.Region = kv[1]
-			case "credentials":
-				config.Credentials = kv[1]
-			default:
-				return nil, errors.New("Invalid key for config block")
-			}
-		}
+	if ok {
+		config.Prefix = prefix
 	}
-
-	if config.Bucket == "" {
-		return nil, errors.New("Missing bucket config")
-	}
-
-	if config.Region == "" {
-		return nil, errors.New("Missing region config")
-	}
-
-	if config.Credentials == "" {
-		return nil, errors.New("Missing credentials config")
-	}
-
+	
 	return &config, nil
 }
 

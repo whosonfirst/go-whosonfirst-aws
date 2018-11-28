@@ -1,3 +1,52 @@
+Release v1.15.84 (2018-11-28)
+===
+
+### Service Client Updates
+* `service/codedeploy`: Updates service API and documentation
+  * Support for Amazon ECS service deployment - AWS CodeDeploy now supports the deployment of Amazon ECS services. An Amazon ECS deployment uses an Elastic Load Balancer, two Amazon ECS target groups, and a listener to reroute production traffic from your Amazon ECS service's original task set to a new replacement task set. The original task set is terminated when the deployment is complete. Success of a deployment can be validated using Lambda functions that are referenced by the deployment. This provides the opportunity to rollback if necessary. You can use the new ECSService, ECSTarget, and ECSTaskSet data types in the updated SDK to create or retrieve an Amazon ECS deployment.
+* `service/comprehendmedical`: Adds new service
+* `service/ec2`: Updates service API and documentation
+  * With VPC sharing, you can now allow multiple accounts in the same AWS Organization to launch their application resources, like EC2 instances, RDS databases, and Redshift clusters into shared, centrally managed VPCs.
+* `service/ecs`: Updates service API and documentation
+  * This release of Amazon Elastic Container Service (Amazon ECS) introduces support for blue/green deployment feature. Customers can now update their ECS services in a blue/green deployment pattern via using AWS CodeDeploy.
+* `service/kinesisanalytics`: Updates service API and documentation
+  * Improvements to error messages, validations, and more to the Kinesis Data Analytics APIs.
+* `service/kinesisanalyticsv2`: Adds new service
+* `service/logs`: Updates service API and documentation
+  * Six new APIs added to support CloudWatch Logs Insights. The APIs are StartQuery, StopQuery, GetQueryResults, GetLogRecord, GetLogGroupFields, and DescribeQueries.
+* `service/mediaconnect`: Adds new service
+* `service/meteringmarketplace`: Updates service API, documentation, and paginators
+  * RegisterUsage operation added to AWS Marketplace Metering Service, allowing sellers to meter and entitle Docker container software use with AWS Marketplace. For details on integrating Docker containers with RegisterUsage see: https://docs.aws.amazon.com/marketplace/latest/userguide/entitlement-and-metering-for-paid-products.html
+* `service/translate`: Updates service API and documentation
+
+Release v1.15.83 (2018-11-27)
+===
+
+### Service Client Updates
+* `service/ec2`: Updates service API and documentation
+  * Adds the following updates: 1. Transit Gateway helps easily scale connectivity across thousands of Amazon VPCs, AWS accounts, and on-premises networks. 2. Amazon EC2 A1 instance is a new Arm architecture based general purpose instance. 3. You can now launch the new Amazon EC2 compute optimized C5n instances that can utilize up to 100 Gbps of network bandwidth.
+* `service/globalaccelerator`: Adds new service
+* `service/greengrass`: Updates service API and documentation
+  * Support Greengrass Connectors and allow Lambda functions to run without Greengrass containers.
+* `service/iot`: Updates service API and documentation
+  * As part of this release, we are extending capability of AWS IoT Rules Engine to support IoT Events rule action. The IoT Events rule action lets you send messages from IoT sensors and applications to IoT Events for pattern recognition and event detection.
+* `service/iotanalytics`: Updates service API and documentation
+* `service/kms`: Updates service API and documentation
+  * AWS Key Management Service (KMS) now enables customers to create and manage dedicated, single-tenant key stores in addition to the default KMS key store. These are known as custom key stores and are deployed using AWS CloudHSM clusters. Keys that are created in a KMS custom key store can be used like any other customer master key in KMS.
+* `service/s3`: Updates service API and documentation
+  * Four new Amazon S3 Glacier features help you reduce your storage costs by making it even easier to build archival applications using the Amazon S3 Glacier storage class. S3 Object Lock enables customers to apply Write Once Read Many (WORM) protection to objects in S3 in order to prevent object deletion for a customer-defined retention period. S3 Inventory now supports fields for reporting on S3 Object Lock. "ObjectLockRetainUntilDate", "ObjectLockMode", and "ObjectLockLegalHoldStatus" are now available as valid optional fields.
+* `service/sms`: Updates service API, documentation, and paginators
+  * In this release, AWS Server Migration Service (SMS) has added multi-server migration support to simplify the application migration process. Customers can migrate all their application-specific servers together as a single unit as opposed to moving individual server one at a time. The new functionality includes - 1. Ability to group on-premises servers into applications and application tiers. 2. Auto-generated CloudFormation Template and Stacks for launching migrated servers into EC2. 3. Ability to run post-launch configuration scripts to configure servers and applications in EC2. In order for SMS to launch servers into your AWS account using CloudFormation Templates, we have also updated the ServerMigrationServiceRole IAM policy to include appropriate permissions. Refer to Server Migration Service documentation for more details.
+
+### SDK Enhancements
+* `service/s3/s3manager`: Generate Upload Manager's UploadInput structure ([#2296](https://github.com/aws/aws-sdk-go/pull/2296))
+  * Updates the SDK's code generation to also generate the S3 Upload Manager's UploadInput structure type based on the modeled S3 PutObjectInput. This ensures parity between the two types, and the S3 manager does not fall behind the capabilities of PutObject.
+
+### SDK Bugs
+* `private/model/api`: Fix model loading to not require docs model. ([#2303](https://github.com/aws/aws-sdk-go/pull/2303))
+  * Fixes the SDK's model loading to not require that the docs model be present. This model isn't explicitly required.
+* Fixup endpoint discovery unit test to be stable ([#2305](https://github.com/aws/aws-sdk-go/pull/2305))
+  * Fixes the SDK's endpoint discovery async unit test to be stable, and produce consistent unit test results.
 Release v1.15.82 (2018-11-26)
 ===
 
