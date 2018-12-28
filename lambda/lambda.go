@@ -6,7 +6,20 @@ import (
 	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	aws_lambda "github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/whosonfirst/go-whosonfirst-aws/session"
 )
+
+func NewLambdaWithDSN(str_dsn string) (*aws_lambda.Lambda, error) {
+
+	sess, err := session.NewSessionWithDSN(str_dsn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	svc := aws_lambda.New(sess)
+	return svc, nil
+}
 
 func InvokeFunction(svc *aws_lambda.Lambda, lambda_func string, lambda_type string, payload interface{}) error {
 
