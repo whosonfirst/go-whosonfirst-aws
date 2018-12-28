@@ -9,7 +9,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-aws/session"
 )
 
-func NewLambdaWithDSN(str_dsn string) (*aws_lambda.Lambda, error) {
+func NewLambdaServiceWithDSN(str_dsn string) (*aws_lambda.Lambda, error) {
 
 	sess, err := session.NewSessionWithDSN(str_dsn)
 
