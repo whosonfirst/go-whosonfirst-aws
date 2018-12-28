@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func NewSQSServiceFromDSN(str_dsn string) (*aws_sqs.SQS, string, error) {
+func NewSQSServiceWithDSN(str_dsn string) (*aws_sqs.SQS, string, error) {
 
 	dsn_map, err := dsn.StringToDSNWithKeys(str_dsn, "region", "credentials", "queue")
 
