@@ -24,6 +24,7 @@ deps:	rmdeps
 	@GOPATH=$(GOPATH) go get -u "github.com/aws/aws-sdk-go"
 	@GOPATH=$(GOPATH) go get -u "github.com/aaronland/go-string"
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-mimetypes"
+	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-cli"
 
 vendor-deps: rmdeps deps
 	if test ! -d vendor; then mkdir vendor; fi
@@ -44,3 +45,4 @@ fmt:
 bin: 	self
 	@GOPATH=$(GOPATH) go build -o bin/s3 cmd/s3.go
 	@GOPATH=$(GOPATH) go build -o bin/secret cmd/secret.go
+	@GOPATH=$(GOPATH) go build -o bin/ecs-run-task cmd/ecs-run-task.go
