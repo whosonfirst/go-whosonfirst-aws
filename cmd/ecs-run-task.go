@@ -1,7 +1,18 @@
 package main
 
-// this is the simplest-dumbest tool to run and ECS task and log its output
-// it works but could use a lot of finessing... (20190205/thisisaaronland)
+/*
+
+this is the simplest-dumbest tool to run and ECS task and log its output - it works but could use
+a lot of finessing... (20190205/thisisaaronland)
+
+./bin/ecs-run-task -monitor -ecs-dsn 'region=us-east-1 credentials=session' -cluster example -container example -task 'example:1' -subnet 'subnet-example' -security-group 'sg-example' curl -s localhost:9200
+time passes...
+2019/02/05 12:58:31 Task arn:aws:ecs:us-east-1:xxxx:task/example failed with exit code 7
+
+see the way the (task) output isn't included? that's one of those details to finesse...
+(20190205/thisisaaronland)
+
+*/
 
 import (
 	"errors"
