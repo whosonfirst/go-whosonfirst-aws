@@ -81,6 +81,9 @@ func main() {
 		ecs_cmd[i] = aws.String(fl)
 	}
 
+	// either this doesn't work or I am doing it wrong...
+	// ecs_cmd = append(ecs_cmd, aws.String("2>&1"))
+	
 	ecs_subnets := make([]*string, len(subnets))
 	ecs_security_groups := make([]*string, len(security_groups))
 
