@@ -4,15 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	aws_cloudwatchlogs "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	aws_ecs "github.com/aws/aws-sdk-go/service/ecs"
 	"github.com/whosonfirst/go-whosonfirst-aws/cloudwatch"
 	"github.com/whosonfirst/go-whosonfirst-aws/session"
-	"log"
+	_ "log"
 	"strings"
 )
 
 type TaskResponse struct {
-	Tasks []string
+	Tasks      []string
+	TaskOutput *aws_ecs.RunTaskOutput
 }
 
 type TaskOptions struct {
@@ -24,12 +26,25 @@ type TaskOptions struct {
 	PublicIP       string
 	Subnets        []string
 	SecurityGroups []string
-	Monitor        bool
-	Logs           bool
-	LogsDSN        string
 }
 
-func LaunchTask(task_opts *TaskOptions, cmd ...string) (*aws_ecs.RunTaskOutput, error) {
+type MonitorTaskResultSet map[string]*MonitorTaskResult
+
+type MonitorTaskResult struct {
+	ARN    string
+	Errors []error
+	Logs   []*aws_cloudwatchlogs.OutputLogEvent
+}
+
+type MonitorTaskOptions struct {
+	DSN       string
+	Container string
+	Cluster   string
+	WithLogs  bool
+	LogsDSN   string
+}
+
+func LaunchTask(task_opts *TaskOptions, cmd ...string) (*TaskResponse, error) {
 
 	ecs_sess, err := session.NewSessionWithDSN(task_opts.DSN)
 
@@ -89,48 +104,39 @@ func LaunchTask(task_opts *TaskOptions, cmd ...string) (*aws_ecs.RunTaskOutput, 
 		Overrides:            overrides,
 	}
 
-	task_rsp, err := ecs_svc.RunTask(input)
+	task_output, err := ecs_svc.RunTask(input)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if len(task_rsp.Tasks) == 0 {
+	if len(task_output.Tasks) == 0 {
 		return nil, errors.New("run task returned no errors... but no tasks")
 	}
 
-	if task_opts.Monitor {
+	task_arns := make([]string, len(task_output.Tasks))
 
-		task_arns := make([]string, len(task_rsp.Tasks))
+	for i, t := range task_output.Tasks {
+		task_arns[i] = *t.TaskArn
+	}
 
-		for i, t := range task_rsp.Tasks {
-			task_arns[i] = *t.TaskArn
-		}
-
-		err := MonitorTasksWithECSService(ecs_svc, task_opts, task_arns...)
-
-		if err != nil {
-			return nil, err
-		}
+	task_rsp := &TaskResponse{
+		Tasks:      task_arns,
+		TaskOutput: task_output,
 	}
 
 	return task_rsp, nil
 }
 
-func MonitorTasks(task_opts *TaskOptions, task_arns ...string) error {
+func MonitorTasks(monitor_opts *MonitorTaskOptions, task_arns ...string) (MonitorTaskResultSet, error) {
 
-	ecs_sess, err := session.NewSessionWithDSN(task_opts.DSN)
+	ecs_sess, err := session.NewSessionWithDSN(monitor_opts.DSN)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	ecs_svc := aws_ecs.New(ecs_sess)
-
-	return MonitorTasksWithECSService(ecs_svc, task_opts, task_arns...)
-}
-
-func MonitorTasksWithECSService(ecs_svc *aws_ecs.ECS, task_opts *TaskOptions, task_arns ...string) error {
 
 	count_tasks := len(task_arns)
 	remaining := count_tasks
@@ -141,26 +147,26 @@ func MonitorTasksWithECSService(ecs_svc *aws_ecs.ECS, task_opts *TaskOptions, ta
 		ecs_tasks[i] = aws.String(t)
 	}
 
-	task_errors := make([]error, 0)
+	result_set := make(map[string]*MonitorTaskResult)
 
 	for remaining > 0 {
 
 		monitor_req := &aws_ecs.DescribeTasksInput{
-			Cluster: aws.String(task_opts.Cluster),
+			Cluster: aws.String(monitor_opts.Cluster),
 			Tasks:   ecs_tasks,
 		}
 
 		monitor_rsp, err := ecs_svc.DescribeTasks(monitor_req)
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		for _, t := range monitor_rsp.Tasks {
 
 			for _, c := range t.Containers {
 
-				if *c.Name != task_opts.Container {
+				if *c.Name != monitor_opts.Container {
 					continue
 				}
 
@@ -168,41 +174,42 @@ func MonitorTasksWithECSService(ecs_svc *aws_ecs.ECS, task_opts *TaskOptions, ta
 					continue
 				}
 
-				if task_opts.Logs {
+				task_arn := *t.TaskArn
+				task_errors := make([]error, 0)
+				task_logs := make([]*aws_cloudwatchlogs.OutputLogEvent, 0)
+
+				if monitor_opts.WithLogs {
 
 					arn := strings.Split(*t.TaskArn, "/")
 
-					cw_group := fmt.Sprintf("/ecs/%s", task_opts.Container)
-					cw_stream := fmt.Sprintf("ecs/%s/%s", task_opts.Container, arn[1])
+					cw_group := fmt.Sprintf("/ecs/%s", monitor_opts.Container)
+					cw_stream := fmt.Sprintf("ecs/%s/%s", monitor_opts.Container, arn[1])
 
-					events, err := cloudwatch.GetLogEvents(task_opts.LogsDSN, cw_group, cw_stream)
+					events, err := cloudwatch.GetLogEvents(monitor_opts.LogsDSN, cw_group, cw_stream)
 
-					if err == nil {
-
-						for _, e := range events {
-							log.Println(*e.Message)
-						}
+					if err != nil {
+						task_errors = append(task_errors, err)
+					} else {
+						task_logs = events
 					}
 				}
 
 				if *c.ExitCode != 0 {
-					msg := fmt.Sprintf("Task %s failed with exit code %d\n", *t.TaskArn, *c.ExitCode)
-					err := errors.New(msg)
-					task_errors = append(task_errors, err)
+					msg := fmt.Sprintf("Task failed with exit code %d\n", *c.ExitCode)
+					task_errors = append(task_errors, errors.New(msg))
 				}
 
+				result := &MonitorTaskResult{
+					ARN:    task_arn,
+					Errors: task_errors,
+					Logs:   task_logs,
+				}
+
+				result_set[task_arn] = result
 				remaining -= 1
 			}
 		}
 	}
 
-	if len(task_errors) > 0 {
-
-		for _, e := range task_errors {
-			log.Println(e)
-		}
-
-	}
-
-	return nil
+	return result_set, nil
 }

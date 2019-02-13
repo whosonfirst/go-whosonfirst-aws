@@ -35,6 +35,10 @@ func main() {
 
 	flag.Parse()
 
+	if *logs == true {
+		*monitor = true
+	}
+
 	if *logs_dsn == "" {
 		*logs_dsn = *ecs_dsn
 	}
@@ -48,25 +52,40 @@ func main() {
 		SecurityGroups: security_groups,
 		LaunchType:     *launch_type,
 		PublicIP:       *public_ip,
-		Monitor:        *monitor,
-		Logs:           *logs,
-		LogsDSN:        *logs_dsn,
 	}
 
 	cmd := flag.Args()
 
-	rsp, err := ecs.LaunchTask(task_opts, cmd...)
+	task_rsp, err := ecs.LaunchTask(task_opts, cmd...)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	enc_rsp, err := json.Marshal(rsp)
+	if *monitor {
 
-	if err != nil {
-		log.Fatal(err)
+		monitor_opts := &ecs.MonitorTaskOptions{
+			DSN:       *ecs_dsn,
+			Container: *ecs_container,
+			Cluster:   *ecs_cluster,
+			WithLogs:  *logs,
+			LogsDSN:   *logs_dsn,
+		}
+
+		monitor_rsp, err := ecs.MonitorTasks(monitor_opts, task_rsp.Tasks...)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		enc_rsp, err := json.Marshal(monitor_rsp)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println(string(enc_rsp))
 	}
 
-	fmt.Println(string(enc_rsp))
 	os.Exit(0)
 }

@@ -24,7 +24,7 @@ func GetLogEventsWithService(cw_svc *aws_cloudwatchlogs.CloudWatchLogs, cw_group
 
 	// something something something something that emits to channels something something something
 	// (20190213/thisisaaronland)
-	
+
 	events := make([]*aws_cloudwatchlogs.OutputLogEvent, 0)
 
 	var cursor string
