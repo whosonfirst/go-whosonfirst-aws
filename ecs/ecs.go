@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
-	aws_cloudwatchlogs "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	aws_ecs "github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/whosonfirst/go-whosonfirst-aws/cloudwatch"
 	"github.com/whosonfirst/go-whosonfirst-aws/session"
 	"log"
 	"strings"
@@ -25,7 +25,8 @@ type TaskOptions struct {
 	Subnets        []string
 	SecurityGroups []string
 	Monitor        bool
-	MonitorDSN     string
+	Logs           bool
+	LogsDSN        string
 }
 
 func LaunchTask(task_opts *TaskOptions, cmd ...string) (*aws_ecs.RunTaskOutput, error) {
@@ -131,14 +132,6 @@ func MonitorTasks(task_opts *TaskOptions, task_arns ...string) error {
 
 func MonitorTasksWithECSService(ecs_svc *aws_ecs.ECS, task_opts *TaskOptions, task_arns ...string) error {
 
-	cw_sess, err := session.NewSessionWithDSN(task_opts.MonitorDSN)
-
-	if err != nil {
-		return err
-	}
-
-	cw_svc := aws_cloudwatchlogs.New(cw_sess)
-
 	count_tasks := len(task_arns)
 	remaining := count_tasks
 
@@ -175,31 +168,22 @@ func MonitorTasksWithECSService(ecs_svc *aws_ecs.ECS, task_opts *TaskOptions, ta
 					continue
 				}
 
-				// start of generic code to put in a function
-				// TO DO: what if the logs haven't reached CW yet... ?
+				if task_opts.Logs {
 
-				arn := strings.Split(*t.TaskArn, "/")
+					arn := strings.Split(*t.TaskArn, "/")
 
-				cw_group := fmt.Sprintf("/ecs/%s", task_opts.Container)
-				cw_stream := fmt.Sprintf("ecs/%s/%s", task_opts.Container, arn[1])
+					cw_group := fmt.Sprintf("/ecs/%s", task_opts.Container)
+					cw_stream := fmt.Sprintf("ecs/%s/%s", task_opts.Container, arn[1])
 
-				cw_req := &aws_cloudwatchlogs.GetLogEventsInput{
-					LogGroupName:  aws.String(cw_group),
-					LogStreamName: aws.String(cw_stream),
-					StartFromHead: aws.Bool(true),
-				}
+					events, err := cloudwatch.GetLogEvents(task_opts.LogsDSN, cw_group, cw_stream)
 
-				cw_rsp, err := cw_svc.GetLogEvents(cw_req)
+					if err == nil {
 
-				if err == nil {
-
-					for _, e := range cw_rsp.Events {
-						log.Printf("[%s][%d] %s\n", *t.TaskArn, *e.Timestamp, *e.Message)
+						for _, e := range events {
+							log.Println(*e.Message)
+						}
 					}
 				}
-
-				// TODO: paginated logs...
-				// end of generic code to put in a function
 
 				if *c.ExitCode != 0 {
 					msg := fmt.Sprintf("Task %s failed with exit code %d\n", *t.TaskArn, *c.ExitCode)

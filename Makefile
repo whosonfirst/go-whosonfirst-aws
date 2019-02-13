@@ -7,6 +7,7 @@ prep:
 self:   prep rmdeps
 	if test -d src; then rm -rf src; fi
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-aws
+	cp -r cloudwatch src/github.com/whosonfirst/go-whosonfirst-aws/
 	cp -r config src/github.com/whosonfirst/go-whosonfirst-aws/
 	cp -r ecs src/github.com/whosonfirst/go-whosonfirst-aws/
 	cp -r lambda src/github.com/whosonfirst/go-whosonfirst-aws/
@@ -35,6 +36,7 @@ vendor-deps: rmdeps deps
 	rm -rf src
 
 fmt:
+	go fmt cloudwatch/*.go
 	go fmt cmd/*.go
 	go fmt config/*.go
 	go fmt ecs/*.go

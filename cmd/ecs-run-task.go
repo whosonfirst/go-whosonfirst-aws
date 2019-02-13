@@ -13,8 +13,7 @@ import (
 
 func main() {
 
-	var ecs_dsn = flag.String("ecs-dsn", "", "A valid (go-whosonfirst-aws) ECS DSN.")
-	var cw_dsn = flag.String("cloudwatch-dsn", "", "A valid (go-whosonfirst-aws) CloudWatch DSN.")
+	var ecs_dsn = flag.String("dsn", "", "A valid (go-whosonfirst-aws) ECS DSN.")
 
 	var ecs_container = flag.String("container", "", "The name of your AWS ECS container.")
 	var ecs_cluster = flag.String("cluster", "", "The name of your AWS ECS cluster.")
@@ -23,8 +22,10 @@ func main() {
 	var launch_type = flag.String("launch-type", "FARGATE", "...")
 	var public_ip = flag.String("public-ip", "ENABLED", "...")
 
-	// var mode = flag.String("mode", "cli", "...")
 	var monitor = flag.Bool("monitor", false, "...")
+
+	var logs = flag.Bool("logs", false, "...")
+	var logs_dsn = flag.String("logs-dsn", "", "A valid (go-whosonfirst-aws) CloudWatchLogs DSN.")
 
 	var subnets flags.MultiString
 	flag.Var(&subnets, "subnet", "One or more AWS subnets in which your task will run.")
@@ -34,8 +35,8 @@ func main() {
 
 	flag.Parse()
 
-	if *cw_dsn == "" {
-		*cw_dsn = *ecs_dsn
+	if *logs_dsn == "" {
+		*logs_dsn = *ecs_dsn
 	}
 
 	task_opts := &ecs.TaskOptions{
@@ -48,7 +49,8 @@ func main() {
 		LaunchType:     *launch_type,
 		PublicIP:       *public_ip,
 		Monitor:        *monitor,
-		MonitorDSN:     *cw_dsn,
+		Logs:           *logs,
+		LogsDSN:        *logs_dsn,
 	}
 
 	cmd := flag.Args()
