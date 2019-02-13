@@ -1,3 +1,63 @@
+Release v1.16.33 (2019-02-12)
+===
+
+### Service Client Updates
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+* `service/lambda`: Updates service documentation
+  * Documentation updates for AWS Lambda
+
+Release v1.16.32 (2019-02-11)
+===
+
+### Service Client Updates
+* `service/appstream`: Updates service API and documentation
+  * This update enables customers to find the start time, max expiration time, and connection status associated with AppStream streaming session.
+* `service/codebuild`: Updates service API and documentation
+  * Add customized webhook filter support
+* `service/mediapackage`: Updates service API and documentation
+  * Adds optional configuration for DASH to compact the manifest by combining duplicate SegmentTemplate tags. Adds optional configuration for DASH SegmentTemplate format to refer to segments by "Number" (default) or by "Time".
+
+Release v1.16.31 (2019-02-08)
+===
+
+### Service Client Updates
+* `service/discovery`: Updates service documentation
+  * Documentation updates for the AWS Application Discovery Service.
+* `service/dlm`: Updates service API and documentation
+* `service/ecs`: Updates service API, documentation, and examples
+  * Amazon ECS introduces the PutAccountSettingDefault API, an API that allows a user to set the default ARN/ID format opt-in status for all the roles and users in the account. Previously, setting the account's default opt-in status required the use of the root user with the PutAccountSetting API.
+
+Release v1.16.30 (2019-02-07)
+===
+
+### Service Client Updates
+* `service/es`: Updates service API and documentation
+  * Feature: Support for three Availability Zone deployments
+* `service/gamelift`: Updates service API and documentation
+  * This release delivers a new API action for deleting unused matchmaking rule sets. More details are available at https://aws.amazon.com/releasenotes/?tag=releasenotes%23keywords%23amazon-gamelift.
+* `service/medialive`: Updates service API and documentation
+  * This release adds tagging of channels, inputs, and input security groups.
+* `service/robomaker`: Updates service API and documentation
+
+Release v1.16.29 (2019-02-06)
+===
+
+### Service Client Updates
+* `service/ec2`: Updates service API and documentation
+  * Add Linux with SQL Server Standard, Linux with SQL Server Web, and Linux with SQL Server Enterprise to the list of allowed instance platforms for On-Demand Capacity Reservations.
+* `service/fsx`: Updates service API and documentation
+
+Release v1.16.28 (2019-02-05)
+===
+
+### Service Client Updates
+* `service/ec2`: Updates service API and documentation
+  * ec2.DescribeVpcPeeringConnections pagination support
+* `service/servicecatalog`: Updates service documentation
+  * Service Catalog Documentation Update for ProvisionedProductDetail
+* `service/shield`: Updates service API and documentation
+  * The DescribeProtection request now accepts resource ARN as valid parameter.
+
 Release v1.16.27 (2019-02-04)
 ===
 
