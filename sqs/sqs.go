@@ -44,6 +44,17 @@ func NewSQSServiceWithDSN(str_dsn string) (*aws_sqs.SQS, string, error) {
 	return svc, sqs_queue, nil
 }
 
+func SendMessageWithDSN(dsn string, body string) (*aws_sqs.SendMessageOutput, error) {
+
+	svc, queue_url, err := NewSQSServiceWithDSN(dsn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return SendMessage(svc, queue_url, body)
+}
+
 func SendMessage(svc *aws_sqs.SQS, queue_url string, body string) (*aws_sqs.SendMessageOutput, error) {
 
 	msg := &aws_sqs.SendMessageInput{
@@ -51,5 +62,5 @@ func SendMessage(svc *aws_sqs.SQS, queue_url string, body string) (*aws_sqs.Send
 		MessageBody: aws.String(body),
 	}
 
-	rsp, err := svc.SendMessage(msg)
+	return svc.SendMessage(msg)
 }
