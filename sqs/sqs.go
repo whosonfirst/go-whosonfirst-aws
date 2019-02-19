@@ -43,3 +43,13 @@ func NewSQSServiceWithDSN(str_dsn string) (*aws_sqs.SQS, string, error) {
 
 	return svc, sqs_queue, nil
 }
+
+func SendMessage(svc *aws_sqs.SQS, queue_url string, body string) (*aws_sqs.SendMessageOutput, error) {
+
+	msg := &aws_sqs.SendMessageInput{
+		QueueUrl:    aws.String(queue_url),
+		MessageBody: aws.String(body),
+	}
+
+	rsp, err := svc.SendMessage(msg)
+}
