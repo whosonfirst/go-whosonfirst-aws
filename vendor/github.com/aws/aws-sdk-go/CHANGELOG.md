@@ -1,3 +1,53 @@
+Release v1.17.0 (2019-02-18)
+===
+
+### Service Client Updates
+* `service/athena`: Updates service API, documentation, and paginators
+  * This release adds support for Workgroups to Amazon Athena. Use Workgroups to isolate users, teams, applications or workloads in the same account, control costs by setting up query limits and creating Amazon SNS alarms, and publish query-related metrics to Amazon CloudWatch.
+* `service/secretsmanager`: Updates service API and documentation
+  * This release increases the maximum allowed size of SecretString or SecretBinary from 4KB to 7KB in the CreateSecret, UpdateSecret, PutSecretValue and GetSecretValue APIs.
+
+### SDK Features
+* `service/s3/s3manager`: Update S3 Upload Multipart location ([#2453](https://github.com/aws/aws-sdk-go/pull/2453))
+  * Updates the Location returned value of S3 Upload's Multipart UploadOutput type to be consistent with single part upload URL. This update also brings the multipart upload Location inline with the S3 object URLs created by the SDK
+  * Fix [#1385](https://github.com/aws/aws-sdk-go/issues/1385)
+
+### SDK Enhancements
+* `service/s3`: Update BucketRegionError message to include more information ([#2451](https://github.com/aws/aws-sdk-go/pull/2451))
+  * Updates the BucketRegionError error message to include information about the endpoint and actual region the bucket is in if known. This error message is created by the SDK, but could produce a confusing error message if the user provided a region that doesn't match the endpoint.
+  * Fix [#2426](https://github.com/aws/aws-sdk-go/pull/2451)
+
+Release v1.16.36 (2019-02-15)
+===
+
+### Service Client Updates
+* `service/application-autoscaling`: Updates service API and documentation
+* `service/chime`: Updates service documentation
+  * Documentation updates for Amazon Chime
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+* `service/iot`: Updates service API and documentation
+  * In this release, IoT Device Defender introduces support for tagging Scheduled Audit resources.
+
+Release v1.16.35 (2019-02-14)
+===
+
+### Service Client Updates
+* `service/ec2`: Updates service API and documentation
+  * This release adds tagging and ARN support for AWS Client VPN Endpoints.You can now run bare metal workloads on EC2 M5 and M5d instances. m5.metal and m5d.metal instances are powered by custom Intel Xeon Scalable Processors with a sustained all core frequency of up to 3.1 GHz. m5.metal and m5d.metal offer 96 vCPUs and 384 GiB of memory. With m5d.metal, you also have access to 3.6 TB of NVMe SSD-backed instance storage. m5.metal and m5d.metal instances deliver 25 Gbps of aggregate network bandwidth using Elastic Network Adapter (ENA)-based Enhanced Networking, as well as 14 Gbps of bandwidth to EBS.You can now run bare metal workloads on EC2 z1d instances. z1d.metal instances are powered by custom Intel Xeon Scalable Processors with a sustained all core frequency of up to 4.0 GHz. z1d.metal offers 48 vCPUs, 384 GiB of memory, and 1.8 TB of NVMe SSD-backed instance storage. z1d.metal instances deliver 25 Gbps of aggregate network bandwidth using Elastic Network Adapter (ENA)-based Enhanced Networking, as well as 14 Gbps of bandwidth to EBS.
+* `service/kinesisvideo`: Updates service API and documentation
+  * Adds support for Tag-On-Create for Kinesis Video Streams. A list of tags associated with the stream can be created at the same time as the stream creation.
+
+Release v1.16.34 (2019-02-13)
+===
+
+### Service Client Updates
+* `service/elasticfilesystem`: Updates service API and documentation
+  * Customers can now use the EFS Infrequent Access (IA) storage class to more cost-effectively store larger amounts of data in their file systems. EFS IA is cost-optimized storage for files that are not accessed every day. You can create a new file system and enable Lifecycle Management to automatically move files that have not been accessed for 30 days from the Standard storage class to the IA storage class.
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+* `service/mediatailor`: Updates service API and documentation
+* `service/rekognition`: Updates service API and documentation
+  * GetContentModeration now returns the version of the moderation detection model used to detect unsafe content.
+
 Release v1.16.33 (2019-02-12)
 ===
 
