@@ -1,3 +1,71 @@
+Release v1.17.5 (2019-02-25)
+===
+
+### Service Client Updates
+* `service/autoscaling`: Updates service API and documentation
+  * Added support for passing an empty SpotMaxPrice parameter to remove a value previously set when updating an Amazon EC2 Auto Scaling group.
+* `service/ce`: Updates service documentation
+* `service/elasticloadbalancingv2`: Updates service API and documentation
+* `service/mediastore`: Updates service API and documentation
+  * This release adds support for access logging, which provides detailed records for the requests that are made to objects in a container.
+
+Release v1.17.4 (2019-02-22)
+===
+
+### Service Client Updates
+* `service/athena`: Updates service API and documentation
+  * This release adds tagging support for Workgroups to Amazon Athena. Use these APIs to add, remove, or list tags on Workgroups, and leverage the tags for various authorization and billing scenarios.
+* `service/cloud9`: Updates service API and documentation
+  * Adding EnvironmentLifecycle to the Environment data type.
+* `service/glue`: Updates service API, documentation, and paginators
+  * AWS Glue adds support for assigning AWS resource tags to jobs, triggers, development endpoints, and crawlers. Each tag consists of a key and an optional value, both of which you define. With this capacity, customers can use tags in AWS Glue to easily organize and identify your resources, create cost allocation reports, and control access to resources.
+* `service/states`: Updates service API and documentation
+  * This release adds support for tag-on-create. You can now add tags when you create AWS Step Functions activity and state machine resources. For more information about tagging, see AWS Tagging Strategies.
+
+Release v1.17.3 (2019-02-21)
+===
+
+### Service Client Updates
+* `service/codebuild`: Updates service API and documentation
+  * Add support for CodeBuild local caching feature
+* `service/kinesis-video-archived-media`: Updates service API and documentation
+* `service/kinesis-video-media`: Updates service documentation
+* `service/kinesisvideo`: Updates service documentation
+  * Documentation updates for Kinesis Video Streams
+* `service/monitoring`: Updates service documentation
+  * Documentation updates for monitoring
+* `service/organizations`: Updates service documentation
+  * Documentation updates for organizations
+* `service/transfer`: Updates service API and documentation
+  * Bug fix: increased the max length allowed for request parameter NextToken when paginating List operations
+* `service/workdocs`: Updates service documentation
+  * Documentation updates for workdocs
+
+Release v1.17.2 (2019-02-20)
+===
+
+### Service Client Updates
+* `service/codecommit`: Updates service API and documentation
+  * This release adds an API for adding / updating / deleting / copying / moving / setting file modes for one or more files directly to an AWS CodeCommit repository without requiring a Git client.
+* `service/directconnect`: Updates service API and documentation
+  * Documentation updates for AWS Direct Connect
+* `aws/endpoints`: Updated Regions and Endpoints metadata.
+* `service/medialive`: Updates service API and documentation
+  * This release adds support for VPC inputs, allowing you to push content from your Amazon VPC directly to MediaLive.
+
+Release v1.17.1 (2019-02-19)
+===
+
+### Service Client Updates
+* `service/ds`: Updates service API and documentation
+  * This release adds support for tags during directory creation (CreateDirectory, CreateMicrosoftAd, ConnectDirectory).
+* `service/elasticfilesystem`: Updates service API, documentation, and examples
+  * Amazon EFS now supports adding tags to file system resources as part of the CreateFileSystem API . Using this capability, customers can now more easily enforce tag-based authorization for EFS file system resources.
+* `service/iot`: Updates service API and documentation
+  * AWS IoT - AWS IoT Device Defender adds support for configuring behaviors in a security profile with statistical thresholds. Device Defender also adds support for configuring multiple data-point evaluations before a violation is either created or cleared.
+* `service/ssm`: Updates service API and documentation
+  * AWS Systems Manager now supports adding tags when creating Activations, Patch Baselines, Documents, Parameters, and Maintenance Windows
+
 Release v1.17.0 (2019-02-18)
 ===
 

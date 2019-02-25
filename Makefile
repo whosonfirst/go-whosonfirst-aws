@@ -50,3 +50,4 @@ bin: 	self
 	@GOPATH=$(GOPATH) go build -o bin/s3 cmd/s3.go
 	@GOPATH=$(GOPATH) go build -o bin/secret cmd/secret.go
 	@GOPATH=$(GOPATH) go build -o bin/ecs-run-task cmd/ecs-run-task.go
+	@GOPATH=$(GOPATH) go build -o bin/lambda-run-task cmd/lambda-run-task.go
