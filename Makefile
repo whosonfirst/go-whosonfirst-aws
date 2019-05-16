@@ -12,7 +12,7 @@ fmt:
 	go fmt session/*.go
 	go fmt util/*.go
 
-bin: 	self
+tools:
 	@GOPATH=$(GOPATH) go build -o bin/s3 cmd/s3/main.go
 	@GOPATH=$(GOPATH) go build -o bin/secret cmd/secret/main.go
 	@GOPATH=$(GOPATH) go build -o bin/ecs-run-task cmd/ecs-run-task/main.go
