@@ -1,6 +1,5 @@
 # github.com/aaronland/go-string v0.1.0
 github.com/aaronland/go-string/dsn
-github.com/aaronland/go-string/random
 # github.com/aws/aws-sdk-go v1.19.31
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/service/cloudwatchlogs

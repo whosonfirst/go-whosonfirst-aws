@@ -1,6 +1,3 @@
-vendor-deps: 
-	go mod vendor
-
 fmt:
 	go fmt cloudwatch/*.go
 	go fmt cmd/*.go
@@ -13,7 +10,7 @@ fmt:
 	go fmt util/*.go
 
 tools:
-	@GOPATH=$(GOPATH) go build -o bin/s3 cmd/s3/main.go
-	@GOPATH=$(GOPATH) go build -o bin/secret cmd/secret/main.go
-	@GOPATH=$(GOPATH) go build -o bin/ecs-run-task cmd/ecs-run-task/main.go
-	@GOPATH=$(GOPATH) go build -o bin/lambda-run-task cmd/lambda-run-task/main.go
+	go build -mod vendor -o bin/s3 cmd/s3/main.go
+	go build -mod vendor -o bin/secret cmd/secret/main.go
+	go build -mod vendor -o bin/ecs-run-task cmd/ecs-run-task/main.go
+	go build -mod vendor -o bin/lambda-run-task cmd/lambda-run-task/main.go
