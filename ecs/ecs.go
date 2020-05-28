@@ -3,6 +3,7 @@ package ecs
 import (
 	"errors"
 	"fmt"
+	"github.com/aaronland/go-aws-session"	
 	"github.com/aws/aws-sdk-go/aws"
 	aws_cloudwatchlogs "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 	aws_ecs "github.com/aws/aws-sdk-go/service/ecs"

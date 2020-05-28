@@ -6,9 +6,10 @@ There are many AWS wrappers. This one is ours.
 
 This package has been deprecated and will be archived shortly. The functionality it defined has been moved in to individual and discrete packages. They are:
 
-* https://github.com/aaronland/go-aws-session
-* https://github.com/aaronland/go-aws-s3
+* https://github.com/aaronland/go-aws-ecs
 * https://github.com/aaronland/go-aws-lambda
+* https://github.com/aaronland/go-aws-s3
+* https://github.com/aaronland/go-aws-session
 
 You should use these packages instead of this one.
 
