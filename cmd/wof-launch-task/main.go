@@ -24,7 +24,7 @@ func main() {
 
 	var github_org string
 	var github_prefix multi.MultiCSVString
-	var github_exclude multi.MultiCSVString	
+	var github_exclude multi.MultiCSVString
 	var github_access_token_uri string
 	var github_updated_since string
 
@@ -42,14 +42,14 @@ func main() {
 
 	var task_per_repo bool
 	var dryrun bool
-	
+
 	fs := flagset.NewFlagSet("update")
 
 	fs.StringVar(&mode, "mode", "cli", "Valid options are: cli, lambda")
 
 	fs.StringVar(&github_org, "github-organization", "whosonfirst-data", "The GitHub organization to poll for recently updated repositories.")
 	fs.Var(&github_prefix, "github-prefix", "Zero or more prefixes to filter repositories by (must match). Prefixes may also passed in a single comma-separated string.")
-	fs.Var(&github_prefix, "github-exclude", "Zero or more prefixes to exclude repositories by (must NOT match). Prefixes may also passed in a single comma-separated string.")	
+	fs.Var(&github_prefix, "github-exclude", "Zero or more prefixes to exclude repositories by (must NOT match). Prefixes may also passed in a single comma-separated string.")
 	fs.StringVar(&github_access_token_uri, "github-access-token-uri", "", "A valid gocloud.dev/runtimevar URI that dereferences to a GitHub API access token.")
 	fs.StringVar(&github_updated_since, "github-updated-since", "PT24H", "A valid ISO-8601 duration string.")
 
@@ -114,7 +114,7 @@ func main() {
 	if len(github_exclude) > 0 {
 		list_opts.Exclude = github_exclude
 	}
-	
+
 	if github_access_token_uri != "" {
 
 		access_token, err := runtimevar.StringVar(ctx, github_access_token_uri)
@@ -134,45 +134,53 @@ func main() {
 			return fmt.Errorf("Failed to list repos for %s, %w", github_org, err)
 		}
 
+		cmd := make([]string, 0)
+
 		if !task_per_repo {
 
-			cmd := strings.Split(ecs_task_command, " ")
-			
+			if ecs_task_command != "" {
+				cmd = strings.Split(ecs_task_command, " ")
+			}
+
 			if dryrun {
-				log.Printf("[dryrun] Launch task '%s' (%s) with command '%s'\n", task_opts.Task, task_opts.Container, ecs_task_command)
+				log.Printf("[dryrun] Launch task '%s' (%s) with command '%s' (%v)\n", task_opts.Task, task_opts.Container, ecs_task_command, cmd)
 			} else {
-			
+
 				task_rsp, err := ecs.LaunchTask(ctx, svc, task_opts, cmd...)
-			
+
 				if err != nil {
 					return fmt.Errorf("Failed to launch ECS task for %s, %w", task_opts.Task, err)
 				}
-				
-				log.Printf("Launched task %s with ARNs %s\n", task_opts.Task, strings.Join(task_rsp.Tasks, ","))
+
+				log.Printf("Launched task %s with command '%s' with ARNs %s\n", task_opts.Task, ecs_task_command, strings.Join(task_rsp.Tasks, ","))
 			}
-			
+
 		} else {
-			
+
 			for _, name := range repos {
-				
-				task_cmd := strings.Replace(ecs_task_command, "{repo}", name, -1)
-				cmd := strings.Split(task_cmd, " ")
-				
+
+				var task_cmd string
+
+				if ecs_task_command != "" {
+					task_cmd = strings.Replace(ecs_task_command, "{repo}", name, -1)
+					cmd = strings.Split(task_cmd, " ")
+				}
+
 				if dryrun {
 					log.Printf("[dryrun] %s (%s) %s\n", task_opts.Task, task_opts.Container, task_cmd)
 					continue
 				}
-				
+
 				task_rsp, err := ecs.LaunchTask(ctx, svc, task_opts, cmd...)
-				
+
 				if err != nil {
 					return fmt.Errorf("Failed to launch ECS task for %s, %w", name, err)
 				}
-				
+
 				log.Printf("Launched task %s for %s with ARNs %s\n", task_opts.Task, name, strings.Join(task_rsp.Tasks, ","))
 			}
 		}
-		
+
 		return nil
 	}
 
