@@ -134,6 +134,12 @@ func main() {
 			return fmt.Errorf("Failed to list repos for %s, %w", github_org, err)
 		}
 
+		if len(repos) == 0 {
+			return nil
+		}
+
+		log.Printf("One or more (%d) repos has been updated, %s\n", len(repos), strings.Join(repos, ","))
+
 		cmd := make([]string, 0)
 
 		if !task_per_repo {
