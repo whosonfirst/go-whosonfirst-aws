@@ -2,6 +2,22 @@
 // have been updated with an ISO-8601-encoded period of time.
 package main
 
+/*
+
+$> ./bin/wof-launch-task \
+	-dryrun \
+	-aws-session-uri 'aws://?region={REGION}&credentials={CREDENTIALS}' \
+	-ecs-cluster whosonfirst \
+	-ecs-container whosonfirst-data-indexing \
+	-github-access-token-uri 'constant://?val={TOKEN}' \
+	-github-ensure-commits=false \
+	-github-prefix whosonfirst-data \
+	-github-updated-since P90D \
+	-task-per-repo=true \
+	-ecs-task-command '/usr/local/bin/index.sh -r {repo}'
+
+*/
+
 import (
 	"context"
 	"fmt"
@@ -28,6 +44,8 @@ func main() {
 	var github_access_token_uri string
 	var github_updated_since string
 
+	var github_ensure_commits bool
+	
 	var aws_session_uri string
 
 	var ecs_task string
@@ -53,6 +71,8 @@ func main() {
 	fs.StringVar(&github_access_token_uri, "github-access-token-uri", "", "A valid gocloud.dev/runtimevar URI that dereferences to a GitHub API access token.")
 	fs.StringVar(&github_updated_since, "github-updated-since", "PT24H", "A valid ISO-8601 duration string.")
 
+	fs.BoolVar(&github_ensure_commits, "github-ensure-commits", true, "Ensure that all matching repos have at least one updated file in their last commit")
+	
 	fs.StringVar(&aws_session_uri, "aws-session-uri", "", "A valid aaronland/go-aws-session URI string.")
 
 	fs.StringVar(&ecs_task, "ecs-task", "", "The name (and version) of your ECS task.")
@@ -105,6 +125,7 @@ func main() {
 	now := time.Now()
 	since := now.Add(-d.ToDuration())
 
+	list_opts.EnsureCommits = github_ensure_commits
 	list_opts.PushedSince = &since
 
 	if len(github_prefix) > 0 {

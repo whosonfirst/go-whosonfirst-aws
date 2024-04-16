@@ -7,17 +7,18 @@ import (
 	"time"
 
 	"github.com/google/go-github/v48/github"
-	"github.com/whosonfirst/go-whosonfirst-github/util"	
+	"github.com/whosonfirst/go-whosonfirst-github/util"
 )
 
 type ListOptions struct {
-	Prefix      []string
-	Exclude     []string
-	Forked      bool
-	NotForked   bool
-	AccessToken string
-	PushedSince *time.Time
-	Debug       bool
+	Prefix        []string
+	Exclude       []string
+	Forked        bool
+	NotForked     bool
+	AccessToken   string
+	PushedSince   *time.Time
+	Debug         bool
+	EnsureCommits bool
 }
 
 type CreateOptions struct {
@@ -163,6 +164,44 @@ func ListReposWithCallback(org string, opts *ListOptions, cb func(repo *github.R
 				if r.PushedAt.Before(*opts.PushedSince) {
 					continue
 				}
+			}
+
+			// https://pkg.go.dev/github.com/google/go-github/v48@v48.2.0/github#RepositoriesService.ListCommits
+			// https://pkg.go.dev/github.com/google/go-github/v48@v48.2.0/github#CommitsListOptions
+			// https://pkg.go.dev/github.com/google/go-github/v48@v48.2.0/github#RepositoryCommit
+			// https://pkg.go.dev/github.com/google/go-github/v48@v48.2.0/github#Commit
+			// https://pkg.go.dev/github.com/google/go-github/v48@v48.2.0/github#CommitFile
+
+			if opts.EnsureCommits {
+
+				commits_opts := &github.CommitsListOptions{}
+
+				if opts.PushedSince != nil {
+					commits_opts.Since = *opts.PushedSince
+				}
+
+				commits, _, err := client.Repositories.ListCommits(ctx, org, *r.Name, commits_opts)
+
+				if err != nil {
+					return fmt.Errorf("Failed to list commits for %s, %w", *r.Name, err)
+				}
+
+				if len(commits) == 0 {
+					continue
+				}
+
+				if len(commits[0].Files) == 0 {
+					continue
+				}
+
+				/*
+					for _, c := range commits {
+
+						for _, f := range c.Files {
+							log.Println("F", f.Filename)
+						}
+					}
+				*/
 			}
 
 			err := cb(r)
