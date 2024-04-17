@@ -3,6 +3,7 @@ package organizations
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -190,18 +191,20 @@ func ListReposWithCallback(org string, opts *ListOptions, cb func(repo *github.R
 					continue
 				}
 
-				if len(commits[0].Files) == 0 {
+				last_commit := commits[0]
+
+				// START OF this does not check whether actual WOF files have been updated
+				// It should also be reconciled with the repositories package
+
+				list_opts := new(github.ListOptions)
+				c, _, err := client.Repositories.GetCommit(ctx, org, *r.Name, *last_commit.SHA, list_opts)
+
+				if len(c.Files) == 0 {
+					slog.Info("No files in last commit", "org", org, "repo", *r.Name, "sha", *last_commit.SHA)
 					continue
 				}
 
-				/*
-					for _, c := range commits {
-
-						for _, f := range c.Files {
-							log.Println("F", f.Filename)
-						}
-					}
-				*/
+				// END OF this does not check whether actual WOF files have been updated
 			}
 
 			err := cb(r)

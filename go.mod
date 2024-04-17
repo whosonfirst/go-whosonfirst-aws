@@ -8,7 +8,8 @@ require (
 	github.com/sfomuseum/go-flags v0.10.0
 	github.com/sfomuseum/iso8601duration v1.1.0
 	github.com/sfomuseum/runtimevar v1.2.0
-	github.com/whosonfirst/go-whosonfirst-github v0.7.0
+	github.com/whosonfirst/go-whosonfirst-github v0.7.2
+
 )
 
 require (
